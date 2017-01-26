@@ -1,33 +1,52 @@
-# P657.HW1
-%% Classify Using k-Nearest Neighbors
-% Find the 10 nearest neighbors in |x| to each point in |y| using first the
-% |'minkowski'| distance metric with a _p_ value of |5|, and then using the
-% |'chebychev'| distance metric.
-%%
-% Load Fisher's iris data set
+function [neighborIds neighborDistances] = kNearestNeighbors(dataMatrix, queryMatrix, k)
+% So the name is kNearestNeighbors, outputs are neighborIds neighborDistances 
+% and the inputs are the things inside arguments
+% So we need run this function first to create it
+%--------------------------------------------------------------------------
+% Program to find the k - nearest neighbors (kNN) within a set of points. 
+% Distance metric used: Euclidean distance
+% 
+% Usage:
+% [neighbors distances] = kNearestNeighbors(dataMatrix, queryMatrix, k);
+% dataMatrix  (N x D) - N vectors with dimensionality D (within which we search for the nearest neighbors)
+% queryMatrix (M x D) - M query vectors with dimensionality D
+% k           (1 x 1) - Number of nearest neighbors desired
+% 
+% Example:
+% a = [1 1; 2 2; 3 2; 4 4; 5 6];
+% b = [1 1; 2 1; 6 2];
+% [neighbors distances] = kNearestNeighbors(a,b,2);
+% Why are neighbors and distances in brackets aren't you assigned this to
+% the kNearestNeighbors function
+% Output:
+% neighbors =
+%      1     2
+%      1     2
+%      4     3
+% 
+% distances =
+%          0    1.4142
+%     1.0000    1.0000
+%     2.8284    3.0000
+%--------------------------------------------------------------------------
 
-% Copyright 2015 The MathWorks, Inc.
-
-load fisheriris
-x = meas(:,3:4);
-y = [5 1.45;6 2;2.75 .75];
-%%
-% Perform a |knnsearch| between |x| and the query points in |y|,
-% using first Minkowski then Chebychev distance metrics.
-[n,d]=knnsearch(x,y,'k',10,'distance','minkowski','p',5);
-[ncb,dcb] = knnsearch(x,y,'k',10,...
-   'distance','chebychev');
-%%
-% Visualize the results of the two different nearest neighbors searches.
-% Plot the training data. Plot an X for the query points. Use circles to
-% denote the Minkowski nearest neighbors. Use pentagrams to denote the
-% Chebychev nearest neighbors.
-gscatter(x(:,1),x(:,2),species)
-line(y(:,1),y(:,2),'marker','x','color','k',...
-   'markersize',10,'linewidth',2,'linestyle','none')
-line(x(n,1),x(n,2),'color',[.5 .5 .5],'marker','o',...
-   'linestyle','none','markersize',10)
-line(x(ncb,1),x(ncb,2),'color',[.5 .5 .5],'marker','p',...
-   'linestyle','none','markersize',10)
-legend('setosa','versicolor','virginica','query point',...
-'minkowski','chebychev','Location','best')
+neighborIds = zeros(size(queryMatrix,1),k);
+% Creating a matrix of zeros for potential cluster ID's
+neighborDistances = neighborIds;
+% Reassinging the name to neighborDistances
+numDataVectors = size(dataMatrix,1);
+% This is creating an empty vector 
+% Size is equal to the dataMatrix and then creates one of them
+% Data Matrix is equal to the original data
+numQueryVectors = size(queryMatrix,1);
+% numQueryVectors is creating a blank matrix the same size as training data
+% with only one vector
+for i=1:numQueryVectors
+    dist = sum((repmat(queryMatrix(i,:),numDataVectors,1)-dataMatrix).^2,2);
+    % Here is where I would transform distance into the weighted distance
+    [sortval, sortpos] = sort(dist,'ascend');
+    % Creating another function called sort that sorts then by distance
+    % with two arguments
+    neighborIds(i,:) = sortpos(1:k);
+    neighborDistances(i,:) = sqrt(sortval(1:k));
+end
